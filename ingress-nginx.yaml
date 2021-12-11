@@ -263,6 +263,8 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
   labels:
     helm.sh/chart: ingress-nginx-4.0.10
     app.kubernetes.io/name: ingress-nginx
@@ -288,6 +290,9 @@ spec:
       protocol: TCP
       targetPort: https
       appProtocol: https
+    - name: prometheus
+      port: 10254
+      targetPort: prometheus
   selector:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/instance: ingress-nginx
