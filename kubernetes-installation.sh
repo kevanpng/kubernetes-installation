@@ -5,8 +5,8 @@ set -o pipefail
 set -o nounset
 set -o xtrace
 
-# run script as root
-sudo su -
+# MUST run script as root
+
 # must have python3 and pip3
 
 #Assignment - Platform Engineer
