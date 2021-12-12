@@ -10,6 +10,9 @@ spec:
     image: hashicorp/http-echo:0.2.3
     args:
     - "-text=foo"
+    livenessProbe:
+      httpGet:
+        port: 5678
 ---
 kind: Service
 apiVersion: v1
@@ -34,6 +37,9 @@ spec:
     image: hashicorp/http-echo:0.2.3
     args:
     - "-text=bar"
+    livenessProbe:
+      httpGet:
+        port: 5678
 ---
 kind: Service
 apiVersion: v1
