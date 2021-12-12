@@ -127,8 +127,7 @@ pip install -r requirements.txt
 
 # start locust in the background. interact with its API
 # 1 user, spawn rate of 1 user per second
-locust --host=http://localhost --headless -u 1 -r 1
-sleep 20
+locust --host=http://localhost --headless -u 1 -r 1 --run-time 10s
 # 1 user, spawn_rate of 1 user per second, hit localhost/foo
 #curl 'http://0.0.0.0:8089/swarm' \
 #  -H 'Connection: keep-alive' \
@@ -149,7 +148,7 @@ sleep 20
 #Average requests per second
 # rate(nginx_ingress_controller_requests[1m])
 # let the swarm hit the server for awhile
-sleep 10
+#sleep 10
 end_time=$(date +%s)
 # starts 10s ago
 start_time=$(($end_time-10))
@@ -170,18 +169,4 @@ echo "All done!"
 #Put your script and any additional required resources in a GitHub public repository. Include documentation that tells us how to run your script
 #(including instructions on pre-requisites). Send us the link to the repository.
 
-curl 'http://localhost:8089/stats/requests' \
-  -H 'Connection: keep-alive' \
-  -H 'sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"' \
-  -H 'Accept: */*' \
-  -H 'X-Requested-With: XMLHttpRequest' \
-  -H 'sec-ch-ua-mobile: ?0' \
-  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36' \
-  -H 'sec-ch-ua-platform: "macOS"' \
-  -H 'Sec-Fetch-Site: same-origin' \
-  -H 'Sec-Fetch-Mode: cors' \
-  -H 'Sec-Fetch-Dest: empty' \
-  -H 'Referer: http://localhost:8089/' \
-  -H 'Accept-Language: en-US,en;q=0.9' \
-  -H 'Cookie: Pycharm-4566257b=ec130dea-50ce-40ff-b41c-0ceed5b19783' \
-  --compressed
+curl 'http://localhost:8089/stats/requests'
