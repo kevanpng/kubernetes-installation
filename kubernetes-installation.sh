@@ -138,7 +138,7 @@ curl 'http://0.0.0.0:8089/swarm' \
   -H 'Origin: http://0.0.0.0:8089' \
   -H 'Referer: http://0.0.0.0:8089/' \
   -H 'Accept-Language: en-US,en;q=0.9' \
-  --data-raw 'user_count=1&spawn_rate=1&host=http%3A%2F%2Flocalhost%2Ffoo' \
+  --data-raw 'user_count=1&spawn_rate=1&host=http%3A%2F%2Flocalhost' \
   --compressed \
   --insecure
 
