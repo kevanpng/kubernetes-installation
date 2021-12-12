@@ -14,7 +14,6 @@ Automatically installs a local kubernetes cluster, some services, ingress and pr
   - curl
   - git
 - `kubernetes-installation.sh` must be run as root user
-> Tested on MacOs 
 > Tested on Linux EC2 Amazon Linux 2 AMI (HVM) - Kernel 5.10, SSD Volume Type
 > t2.medium instance, 2 vCPUs, 4GB memory
 
@@ -51,5 +50,6 @@ The script will:
 - Runs Locust and load tests the ingress controller
 - Use a python script to query the prometheus server using PromQL and outputs a CSV for memory, CPI usage and requests per second.
 
+After the script is run, look at `query_cpu.csv`, `query_mem.csv`, and `query_reqs.csv` for the PromQL query results.
 # Possible improvements
 - use Helm
