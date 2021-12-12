@@ -153,7 +153,7 @@ end_time=$(date +%s)
 # starts 10s ago
 start_time=$(($end_time-10))
 
-python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[1m])' "$start_time" "$end_time" query_reqs.csv
+python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[10s])' "$start_time" "$end_time" query_reqs.csv
 
 #Average memory usage per second
 # rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])
