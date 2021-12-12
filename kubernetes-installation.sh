@@ -15,23 +15,23 @@ set -o xtrace
 # TODO change to yum install kind
 #brew install kind
 # TODO must run in root
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
-chmod +x ./kind
-mv ./kind /usr/local/bin/kind
+#curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+#chmod +x ./kind
+#mv ./kind /usr/local/bin/kind
 
 # TODO add docker cli here
 
-# add kubectl here
-cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-yum install -y kubectl
+## add kubectl here
+#cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+#[kubernetes]
+#name=Kubernetes
+#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+#enabled=1
+#gpgcheck=1
+#repo_gpgcheck=1
+#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+#EOF
+#yum install -y kubectl
 
 # TODO change to multi node
 kind_cluster_exist=$(kind get clusters)
@@ -126,21 +126,22 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # start locust in the background. interact with its API
-locust &
+# 1 user, spawn rate of 1 user per second
+locust --host=http://localhost --headless -u 1 -r 1
 sleep 20
 # 1 user, spawn_rate of 1 user per second, hit localhost/foo
-curl 'http://0.0.0.0:8089/swarm' \
-  -H 'Connection: keep-alive' \
-  -H 'Accept: */*' \
-  -H 'X-Requested-With: XMLHttpRequest' \
-  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36' \
-  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
-  -H 'Origin: http://0.0.0.0:8089' \
-  -H 'Referer: http://0.0.0.0:8089/' \
-  -H 'Accept-Language: en-US,en;q=0.9' \
-  --data-raw 'user_count=1&spawn_rate=1&host=http%3A%2F%2Flocalhost' \
-  --compressed \
-  --insecure
+#curl 'http://0.0.0.0:8089/swarm' \
+#  -H 'Connection: keep-alive' \
+#  -H 'Accept: */*' \
+#  -H 'X-Requested-With: XMLHttpRequest' \
+#  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36' \
+#  -H 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8' \
+#  -H 'Origin: http://0.0.0.0:8089' \
+#  -H 'Referer: http://0.0.0.0:8089/' \
+#  -H 'Accept-Language: en-US,en;q=0.9' \
+#  --data-raw 'user_count=1&spawn_rate=1&host=http%3A%2F%2Flocalhost' \
+#  --compressed \
+#  --insecure
 
 
 #Generate a CSV file of time-series data using PromQL to fetch the following metrics from Prometheus:
@@ -169,3 +170,18 @@ echo "All done!"
 #Put your script and any additional required resources in a GitHub public repository. Include documentation that tells us how to run your script
 #(including instructions on pre-requisites). Send us the link to the repository.
 
+curl 'http://localhost:8089/stats/requests' \
+  -H 'Connection: keep-alive' \
+  -H 'sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"' \
+  -H 'Accept: */*' \
+  -H 'X-Requested-With: XMLHttpRequest' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Sec-Fetch-Mode: cors' \
+  -H 'Sec-Fetch-Dest: empty' \
+  -H 'Referer: http://localhost:8089/' \
+  -H 'Accept-Language: en-US,en;q=0.9' \
+  -H 'Cookie: Pycharm-4566257b=ec130dea-50ce-40ff-b41c-0ceed5b19783' \
+  --compressed
