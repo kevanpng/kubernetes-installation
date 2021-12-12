@@ -168,5 +168,3 @@ echo "All done!"
 
 #Put your script and any additional required resources in a GitHub public repository. Include documentation that tells us how to run your script
 #(including instructions on pre-requisites). Send us the link to the repository.
-
-curl 'http://localhost:8089/stats/requests'
