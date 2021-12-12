@@ -10,10 +10,12 @@ set -o xtrace
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
 # TODO change to yum install kind
 #brew install kind
-
+# TODO must run in root
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
 chmod +x ./kind
 mv ./kind /usr/local/bin/kind
+
+# TODO add docker cli here
 
 # TODO change to mutli node
 cat <<EOF | kind create cluster --config=-
@@ -41,7 +43,7 @@ EOF
 # This is the default ingress inginx controller with enabled prometheus metrics
 kubectl apply -f ingress-nginx.yaml
 # cannot wait for a resource that does not exist
-sleep 5
+sleep 20
 # this is a waiter for the nginx to be ready
 kubectl wait \
 --namespace ingress-nginx \
@@ -69,7 +71,7 @@ kubectl apply -f prometheus-ingress.yaml
 #with path “/foo” to one service; and path “/bar” to another. The services should respond with “foo” and “bar” respectively.
 kubectl apply -f usage.yaml
 # test if foo and bar applications are ok
-sleep 5
+sleep 20
 foo_result=$(curl localhost/foo)
 if [[ $foo_result == foo ]]
   then
@@ -96,7 +98,7 @@ fi
 #Ensure the above configuration is healthy, using Kubernetes APIs.
 # start proxy in background so that can interact with API using curl
 kubectl proxy --port=8080 &
-sleep 5
+sleep 20
 curl http://localhost:8080/livez?verbose
 curl http://localhost:8080/readyz?verbose
 curl http://localhost:8080/healthz?verbose
@@ -111,7 +113,7 @@ pip install -r requirements.txt
 
 # start locust in the background. interact with its API
 locust &
-sleep 5
+sleep 20
 # 1 user, spawn_rate of 1 user per second, hit localhost/foo
 curl 'http://0.0.0.0:8089/swarm' \
   -H 'Connection: keep-alive' \
