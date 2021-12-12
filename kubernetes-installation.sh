@@ -150,8 +150,9 @@ curl 'http://0.0.0.0:8089/swarm' \
 # let the swarm hit the server for awhile
 sleep 10
 end_time=$(date +%s)
-# starts 5 mins ago, which is 5 * 60 = 300 in epoch seconds
-start_time=$(($end_time-300))
+# starts 10s ago
+start_time=$(($end_time-10))
+
 python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[1m])' "$start_time" "$end_time" query_reqs.csv
 
 #Average memory usage per second
