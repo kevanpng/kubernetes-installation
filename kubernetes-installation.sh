@@ -15,7 +15,7 @@ os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'pri
 if [[ $os_name == '"Amazon Linux"' ]]
   then
     echo "Installing docker for EC2 instance"
-    amazon-linux-extras install docker
+    amazon-linux-extras install -y docker
   else
     echo "Not in EC2 environment, installing docker according to official docs"
     yum install -y yum-utils
