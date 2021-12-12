@@ -8,6 +8,11 @@ Automatically installs a local kubernetes cluster, some services, ingress and pr
 # Requirements
 - Must be run in a Centos Linux environment. Supports running in EC2 instances, see below for more details
 - Assumes VM has internet connection to install packages from public internet
+- Assumes the following host ports are available:
+  - 80
+  - 443
+  - 8080
+  
 - Assumes the following packages are already installed:
   - python3.6 (or above)
   - pip3

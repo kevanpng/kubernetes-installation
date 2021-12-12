@@ -8,7 +8,6 @@ metadata:
 spec:
   rules:
   # Use the host you used in your kubernetes Ingress Configurations
-  # - host: localhost this works but foo bar dont work
   - host: localhost
     http:
       paths:

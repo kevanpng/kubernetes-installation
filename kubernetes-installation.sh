@@ -54,6 +54,7 @@ fi
 # This is the default ingress nginx controller with enabled prometheus metrics
 kubectl apply -f ingress-nginx.yaml
 # sleep because kubectl cannot wait for a resource that does not exist
+echo "sleeping for 20s..."
 sleep 20
 kubectl wait \
 --namespace ingress-nginx \
@@ -86,6 +87,7 @@ kubectl apply -f prometheus-ingress.yaml
 #with path “/foo” to one service; and path “/bar” to another. The services should respond with “foo” and “bar” respectively.
 kubectl apply -f usage.yaml
 # test if foo and bar applications are ok
+echo "sleeping for 20s..."
 sleep 20
 foo_result=$(curl localhost/foo)
 if [[ $foo_result == foo ]]
@@ -108,6 +110,7 @@ fi
 #Ensure the above configuration is healthy, using Kubernetes APIs.
 # start proxy in background so that can interact with API using curl
 kubectl proxy --port=8080 &
+echo "sleeping for 20s..."
 sleep 20
 curl http://localhost:8080/livez?verbose
 curl http://localhost:8080/readyz?verbose
