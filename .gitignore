@@ -1,1 +1,5 @@
 .idea
+.venv
+query_cpu.csv
+query_mem.csv
+query_reqs.csv
