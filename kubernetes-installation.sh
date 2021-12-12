@@ -157,12 +157,12 @@ python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="f
 
 #Average memory usage per second
 # rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])
-python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' "$start_time" "$end_time" query_mem.csv
+python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[10s])' "$start_time" "$end_time" query_mem.csv
 
 #Average CPU usage per second
 # gets cpu usage per second for that pod
 # sum(rate(container_cpu_usage_seconds_total{pod="ingress-nginx-controller-b7b74c7b7-hj8p6"}[1m])) by (pod_name) * 100
-python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[1m])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv
+python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[10s])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv
 
 echo "All done!"
 
