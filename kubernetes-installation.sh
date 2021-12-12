@@ -5,6 +5,10 @@ set -o pipefail
 set -o nounset
 set -o xtrace
 
+# run script as root
+sudo su -
+# must have python3 and pip3
+
 #Assignment - Platform Engineer
 #Write an automated script that would run on a Linux server or VM to:
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
@@ -16,6 +20,18 @@ chmod +x ./kind
 mv ./kind /usr/local/bin/kind
 
 # TODO add docker cli here
+
+# add kubectl here
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+yum install -y kubectl
 
 # TODO change to mutli node
 cat <<EOF | kind create cluster --config=-
