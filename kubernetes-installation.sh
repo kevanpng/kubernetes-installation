@@ -18,7 +18,7 @@ mv ./kind /usr/local/bin/kind
 
 os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
 # FOR EC2 instance only
-if [[ $os_name == "Amazon Linux" ]]
+if [[ $os_name == '"Amazon Linux"' ]]
   then
     echo "Installing docker for EC2 instance"
     amazon-linux-extras install docker
