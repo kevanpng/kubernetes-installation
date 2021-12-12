@@ -126,17 +126,5 @@ pip install -r requirements.txt
 # 1 user, spawn rate of 1 user per second, uses locustfile.py that will hit localhost/foo
 locust --host=http://localhost --headless -u 1 -r 1 --run-time 10s
 
-end_time=$(date +%s)
-# starts 10s ago
-start_time=$(($end_time-10))
-
-# Average requests per second
-python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[10s])' "$start_time" "$end_time" query_reqs.csv
-
-#Average memory usage per second
-python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' "$start_time" "$end_time" query_mem.csv
-
-#Average CPU usage (in %) per second
-python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[1m])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv
-
+python query_csv_all.py localhost "${ingress_nginx_controller_pod_name}" query_all.csv
 echo "All done!"
