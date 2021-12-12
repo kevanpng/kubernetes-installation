@@ -46,7 +46,6 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 EOF
 yum install -y kubectl
 
-# TODO change to multi node
 kind_cluster_exist=$(kind get clusters)
 
 if [[ $kind_cluster_exist != "kind" ]]
