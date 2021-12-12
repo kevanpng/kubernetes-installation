@@ -33,26 +33,17 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 EOF
 yum install -y kubectl
 
-# TODO change to mutli node
-cat <<EOF | kind create cluster --config=-
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  kubeadmConfigPatches:
-  - |
-    kind: InitConfiguration
-    nodeRegistration:
-      kubeletExtraArgs:
-        node-labels: "ingress-ready=true"
-  extraPortMappings:
-  - containerPort: 80
-    hostPort: 80
-    protocol: TCP
-  - containerPort: 443
-    hostPort: 443
-    protocol: TCP
-EOF
+# TODO change to multi node
+kind_cluster_exist=$(kind get clusters)
+
+if [[ $kind_cluster_exist != "kind" ]]
+  then
+    echo "kind Cluster not found, creating cluster"
+    kind create cluster --config=kind-cluster.yaml
+  else
+    echo "kind Cluster found, skipping cluster creation"
+fi
+
 
 #Install and run the NGINX ingress controller.
 
@@ -69,7 +60,14 @@ kubectl wait \
 
 ingress_nginx_controller_pod_name=$(kubectl get pods --all-namespaces|grep ingress-nginx-controller|awk '{print $2}')
 #Install and run Prometheus, and configure it to monitor the Ingress Controller pods and Ingress resources created by the controller.
-kubectl create namespace monitoring
+monitoring_namespace_found=$(kubectl get namespaces | grep monitoring)
+if [[ -z  $monitoring_namespace_found ]]
+  then
+    echo "monitoring namespace not found, creating namespace"
+    kubectl create namespace monitoring
+  else
+    echo "monitoring namespace found, skipping namespace creation"
+fi
 kubectl apply -f clusterRole.yaml
 kubectl apply -f config-map.yaml
 kubectl apply  -f prometheus-deployment.yaml
