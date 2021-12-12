@@ -65,7 +65,7 @@ kubectl wait \
 
 ingress_nginx_controller_pod_name=$(kubectl get pods --all-namespaces|grep ingress-nginx-controller|awk '{print $2}')
 #Install and run Prometheus, and configure it to monitor the Ingress Controller pods and Ingress resources created by the controller.
-monitoring_namespace_found=$(kubectl get namespaces | grep monitoring)
+monitoring_namespace_found=$(kubectl get namespaces | grep monitoring || :;)
 # if empty str
 if [[ -z  $monitoring_namespace_found ]]
   then
