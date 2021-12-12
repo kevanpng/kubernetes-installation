@@ -53,7 +53,7 @@ kubectl wait \
 
 ingress_nginx_controller_pod_name=$(kubectl get pods --all-namespaces|grep ingress-nginx-controller|awk '{print $2}')
 #Install and run Prometheus, and configure it to monitor the Ingress Controller pods and Ingress resources created by the controller.
-#kubectl create namespace monitoring
+kubectl create namespace monitoring
 kubectl apply -f clusterRole.yaml
 kubectl apply -f config-map.yaml
 kubectl apply  -f prometheus-deployment.yaml
