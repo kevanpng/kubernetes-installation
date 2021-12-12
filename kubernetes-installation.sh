@@ -15,23 +15,28 @@ set -o xtrace
 # TODO change to yum install kind
 #brew install kind
 # TODO must run in root
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
-chmod +x ./kind
-mv ./kind /usr/local/bin/kind
+#curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+#chmod +x ./kind
+#mv ./kind /usr/local/bin/kind
 
 # TODO add docker cli here
+yum install -y yum-utils
+yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+yum install docker-ce docker-ce-cli containerd.io
 
 ## add kubectl here
-cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-yum install -y kubectl
+#cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+#[kubernetes]
+#name=Kubernetes
+#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+#enabled=1
+#gpgcheck=1
+#repo_gpgcheck=1
+#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+#EOF
+#yum install -y kubectl
 
 # TODO change to multi node
 kind_cluster_exist=$(kind get clusters)
@@ -61,10 +66,11 @@ kubectl wait \
 ingress_nginx_controller_pod_name=$(kubectl get pods --all-namespaces|grep ingress-nginx-controller|awk '{print $2}')
 #Install and run Prometheus, and configure it to monitor the Ingress Controller pods and Ingress resources created by the controller.
 monitoring_namespace_found=$(kubectl get namespaces | grep monitoring)
+# if empty str
 if [[ -z  $monitoring_namespace_found ]]
   then
     echo "monitoring namespace not found, creating namespace"
-    kubectl create namespace monitoring
+     kubectl create namespace monitoring
   else
     echo "monitoring namespace found, skipping namespace creation"
 fi
@@ -72,7 +78,6 @@ kubectl apply -f clusterRole.yaml
 kubectl apply -f config-map.yaml
 kubectl apply  -f prometheus-deployment.yaml
 kubectl wait --for=condition=available --timeout=600s deployment/prometheus-deployment -n monitoring
-
 
 #kubectl get deployments --namespace=monitoring
 # service for prometheus deployment
