@@ -1,8 +1,6 @@
-#Put your script and any additional required resources in a GitHub public repository. Include documentation that tells us how to run your script
-#(including instructions on pre-requisites). Send us the link to the repository.
-
 # Description
-Automatically installs a local kubernetes cluster, some services, ingress and prometheus
+Automatically installs a local kubernetes cluster, some services, ingress and prometheus.
+Load tests the ingress and queries prometheus for resource utilization metrics.
 
 
 # Requirements
@@ -53,8 +51,9 @@ The script will:
 - Check ingress routing and asserts the responses
 - Installs python dependencies, including Locust, the load testing tool
 - Runs Locust and load tests the ingress controller
-- Use a python script to query the prometheus server using PromQL and outputs a CSV for memory, CPI usage and requests per second.
+- Use a python script to query the prometheus server using PromQL and outputs a CSV for memory, CPU usage and requests per second.
 
 After the script is run, look at `query_cpu.csv`, `query_mem.csv`, and `query_reqs.csv` for the PromQL query results.
+
 # Possible improvements
 - use Helm
