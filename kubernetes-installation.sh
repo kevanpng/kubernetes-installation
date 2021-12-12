@@ -12,19 +12,29 @@ set -o xtrace
 #Assignment - Platform Engineer
 #Write an automated script that would run on a Linux server or VM to:
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
-# TODO change to yum install kind
-#brew install kind
-# TODO must run in root
 curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
 chmod +x ./kind
 mv ./kind /usr/local/bin/kind
 
-# TODO add docker cli here
-yum install -y yum-utils
-yum-config-manager \
-    --add-repo \
-    https://download.docker.com/linux/centos/docker-ce.repo
-yum install docker-ce docker-ce-cli containerd.io
+os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
+# FOR EC2 instance only
+if [[ $os_name == "Amazon Linux" ]]
+  then
+    echo "Installing docker for EC2 instance"
+    amazon-linux-extras install docker
+    service docker start
+    service docker enable
+  else
+    echo "Not in EC2 environment, installing docker according to official docs"
+    yum install -y yum-utils
+    yum-config-manager \
+        --add-repo \
+        https://download.docker.com/linux/centos/docker-ce.repo
+    yum install docker-ce docker-ce-cli containerd.io
+fi
+
+systemctl start docker
+systemctl enable docker
 
 ## add kubectl here
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
