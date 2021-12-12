@@ -1,11 +1,25 @@
 #!/bin/bash
 
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o xtrace
+
 #Assignment - Platform Engineer
 #Write an automated script that would run on a Linux server or VM to:
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
-brew install kind
-cat <<EOF | kind create cluster --config=-kind: Clusterapi
-Version: kind.x-k8s.io/v1alpha4nodes:
+# TODO change to yum install kind
+#brew install kind
+
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+chmod +x ./kind
+mv ./kind /usr/local/bin/kind
+
+# TODO change to mutli node
+cat <<EOF | kind create cluster --config=-
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
 - role: control-plane
   kubeadmConfigPatches:
   - |
@@ -26,17 +40,25 @@ EOF
 
 # This is the default ingress inginx controller with enabled prometheus metrics
 kubectl apply -f ingress-nginx.yaml
+# cannot wait for a resource that does not exist
+sleep 5
+# this is a waiter for the nginx to be ready
+kubectl wait \
+--namespace ingress-nginx \
+--for=condition=ready pod  \
+--selector=app.kubernetes.io/component=controller  \
+--timeout=90s
 
-# this is a waiter for the inginx to be ready
-kubectl wait --namespace ingress-nginx \\n  --for=condition=ready pod \\n  --selector=app.kubernetes.io/component=controller \\n  --timeout=90s
-
-
+ingress_nginx_controller_pod_name=$(kubectl get pods --all-namespaces|grep ingress-nginx-controller|awk '{print $2}')
 #Install and run Prometheus, and configure it to monitor the Ingress Controller pods and Ingress resources created by the controller.
-kubectl create namespace monitoring
-kubectl create -f clusterRole.yaml
-kubectl create -f config-map.yaml
-kubectl create  -f prometheus-deployment.yaml
-kubectl get deployments --namespace=monitoring
+#kubectl create namespace monitoring
+kubectl apply -f clusterRole.yaml
+kubectl apply -f config-map.yaml
+kubectl apply  -f prometheus-deployment.yaml
+kubectl wait --for=condition=available --timeout=600s deployment/prometheus-deployment -n monitoring
+
+
+#kubectl get deployments --namespace=monitoring
 # service for prometheus deployment
 kubectl apply -f prometheus-service.yaml --namespace=monitoring
 # ingress for prometheus service
@@ -47,27 +69,50 @@ kubectl apply -f prometheus-ingress.yaml
 #with path “/foo” to one service; and path “/bar” to another. The services should respond with “foo” and “bar” respectively.
 kubectl apply -f usage.yaml
 # test if foo and bar applications are ok
-curl localhost/foo
-curl localhost/bar
+sleep 5
+foo_result=$(curl localhost/foo)
+if [[ $foo_result == foo ]]
+  then
+    echo "Success"
+  else
+    echo "Failed"
+    exit 1
+fi
+
+bar_result=$(curl localhost/bar)
+if [[ $bar_result == bar ]]
+  then
+    echo "Success"
+  else
+    echo "Failed"
+    exit 1
+fi
+
 
 # test if api server is ok
-#curl -k https://localhost:6443/livez\?verbose
 
-# proxy
-kubectl proxy --port=8080
+
+
+#Ensure the above configuration is healthy, using Kubernetes APIs.
+# start proxy in background so that can interact with API using curl
+kubectl proxy --port=8080 &
+sleep 5
 curl http://localhost:8080/livez?verbose
 curl http://localhost:8080/readyz?verbose
 curl http://localhost:8080/healthz?verbose
 
-#Ensure the above configuration is healthy, using Kubernetes APIs.
 #Run a benchmarking tool of your choice against the Ingress.
 
-sudo pip3 install virtualenv
+pip3 install virtualenv
 virtualenv -p python3 .venv
 source .venv/bin/activate
-pip3 install locust
+#pip3 install locust
+pip install -r requirements.txt
 
-locust
+# start locust in the background. interact with its API
+locust &
+sleep 5
+# 1 user, spawn_rate of 1 user per second, hit localhost/foo
 curl 'http://0.0.0.0:8089/swarm' \
   -H 'Connection: keep-alive' \
   -H 'Accept: */*' \
@@ -81,22 +126,28 @@ curl 'http://0.0.0.0:8089/swarm' \
   --compressed \
   --insecure
 
-# navigate to endpoint,
+
 #Generate a CSV file of time-series data using PromQL to fetch the following metrics from Prometheus:
 # https://www.robustperception.io/understanding-machine-cpu-usage
 #Average requests per second
 # rate(nginx_ingress_controller_requests[1m])
-python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[1m])' 1639233546 1639233846 query_reqs.csv
+# let the swarm hit the server for awhile
+sleep 10
+end_time=$(date +%s)
+# starts 5 mins ago, which is 5 * 60 = 300 in epoch seconds
+start_time=$(($end_time-300))
+python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[1m])' "$start_time" "$end_time" query_reqs.csv
 
 #Average memory usage per second
 # rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])
-python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' 1639233546 1639233846 query_mem.csv
+python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' "$start_time" "$end_time" query_mem.csv
 
 #Average CPU usage per second
 # gets cpu usage per second for that pod
 # sum(rate(container_cpu_usage_seconds_total{pod="ingress-nginx-controller-b7b74c7b7-hj8p6"}[1m])) by (pod_name) * 100
-python query_csv.py localhost 'sum(rate(container_cpu_usage_seconds_total{pod="ingress-nginx-controller-b7b74c7b7-hj8p6"}[1m])) by (pod_name) * 100' 1639233546 1639233846 query_cpu.csv
+python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[1m])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv
 
+echo "All done!"
 
 #Put your script and any additional required resources in a GitHub public repository. Include documentation that tells us how to run your script
 #(including instructions on pre-requisites). Send us the link to the repository.
