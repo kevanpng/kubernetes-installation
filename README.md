@@ -53,7 +53,4 @@ The script will:
 - Runs Locust and load tests the ingress controller
 - Use a python script to query the prometheus server using PromQL and outputs a CSV for memory, CPU usage and requests per second.
 
-After the script is run, look at `query_cpu.csv`, `query_mem.csv`, and `query_reqs.csv` for the PromQL query results.
-
-# Possible improvements
-- use Helm
+After the script is run, look at `query_all.csv` for the PromQL query results.
