@@ -3,42 +3,42 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-#set -o xtrace
+set -o xtrace
 
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
-chmod +x ./kind
-mv ./kind /usr/local/bin/kind
-
-os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
-# FOR EC2 instance only
-if [[ $os_name == '"Amazon Linux"' ]]
-  then
-    echo "Installing docker for EC2 instance"
-    amazon-linux-extras install -y docker
-  else
-    echo "Not in EC2 environment, installing docker according to official docs"
-    yum install -y yum-utils
-    yum-config-manager \
-        --add-repo \
-        https://download.docker.com/linux/centos/docker-ce.repo
-    yum install docker-ce docker-ce-cli containerd.io
-fi
-
-systemctl start docker
-systemctl enable docker
-
-## add kubectl here
-cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-EOF
-yum install -y kubectl
+#curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+#chmod +x ./kind
+#mv ./kind /usr/local/bin/kind
+#
+#os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
+## FOR EC2 instance only
+#if [[ $os_name == '"Amazon Linux"' ]]
+#  then
+#    echo "Installing docker for EC2 instance"
+#    amazon-linux-extras install -y docker
+#  else
+#    echo "Not in EC2 environment, installing docker according to official docs"
+#    yum install -y yum-utils
+#    yum-config-manager \
+#        --add-repo \
+#        https://download.docker.com/linux/centos/docker-ce.repo
+#    yum install docker-ce docker-ce-cli containerd.io
+#fi
+#
+#systemctl start docker
+#systemctl enable docker
+#
+### add kubectl here
+#cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+#[kubernetes]
+#name=Kubernetes
+#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+#enabled=1
+#gpgcheck=1
+#repo_gpgcheck=1
+#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+#EOF
+#yum install -y kubectl
 
 kind_cluster_exist=$(kind get clusters)
 
@@ -86,9 +86,45 @@ kubectl apply -f prometheus-ingress.yaml
 #Deploy an Ingress resource and two instances of a backend service using the “hashicorp/http-echo”. The Ingress should send requests
 #with path “/foo” to one service; and path “/bar” to another. The services should respond with “foo” and “bar” respectively.
 kubectl apply -f usage.yaml
-# test if foo and bar applications are ok
 echo "sleeping for 20s..."
 sleep 20
+
+#Ensure the above configuration is healthy, using Kubernetes APIs.
+# start proxy in background so that can interact with API using curl
+kubectl proxy --port=8080 &
+echo "sleeping for 20s..."
+sleep 20
+
+# check health of API server
+curl http://localhost:8080/livez?verbose
+curl http://localhost:8080/readyz?verbose
+curl http://localhost:8080/healthz?verbose
+
+# check pod health
+echo "Checking application pod statuses"
+app_statuses=$(curl http://localhost:8080/api/v1/namespaces/default/pods | jq '.items[] | select(.metadata.name | test("bar-app||foo-app")) | {"phase": .status["phase"]} | .phase | contains("Running")')
+for i in "${app_statuses[@]}"
+do
+  if [[ $i ]];
+  then
+    echo "Pod status is 'Running'."
+  else
+    echo "Pod status is not 'Running'."
+    exit 1
+  fi
+done
+echo "All application pods are running and ready"
+
+ingress_status=$(curl http://localhost:8080/api/v1/namespaces/ingress-nginx/pods | jq '.items[] | select(.metadata.name | contains("ingress-nginx-controller")) | {"phase": .status["phase"]} | .phase | contains("Running")')
+if [[ $ingress_status ]];
+  then
+    echo "Ingress status is 'Running'"
+  else
+    echo "Ingress status is not 'Running'"
+    exit 1
+fi
+
+# test if foo and bar applications are ok
 foo_result=$(curl localhost/foo)
 if [[ $foo_result == foo ]]
   then
@@ -106,15 +142,6 @@ if [[ $bar_result == bar ]]
     echo "Failed"
     exit 1
 fi
-
-#Ensure the above configuration is healthy, using Kubernetes APIs.
-# start proxy in background so that can interact with API using curl
-kubectl proxy --port=8080 &
-echo "sleeping for 20s..."
-sleep 20
-curl http://localhost:8080/livez?verbose
-curl http://localhost:8080/readyz?verbose
-curl http://localhost:8080/healthz?verbose
 
 #Run a benchmarking tool of your choice against the Ingress.
 
