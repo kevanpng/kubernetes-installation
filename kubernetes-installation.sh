@@ -158,12 +158,12 @@ end_time=$(date +%s)
 start_time=$(($end_time-10))
 
 # Average requests per second
-python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[10s])' "$start_time" "$end_time" query_reqs.csv
+python query_csv.py localhost 'rate(nginx_ingress_controller_requests{service="foo-service"}[10s])' "$start_time" "$end_time" query_reqs.csv "Requests Per Second"
 
 #Average memory usage per second
-python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' "$start_time" "$end_time" query_mem.csv
+python query_csv.py localhost 'rate(nginx_ingress_controller_nginx_process_resident_memory_bytes[1m])' "$start_time" "$end_time" query_mem.csv "Memory Usage (Bytes)"
 
 #Average CPU usage (in %) per second
-python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[1m])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv
+python query_csv.py localhost "sum(rate(container_cpu_usage_seconds_total{pod=\"${ingress_nginx_controller_pod_name}\"}[1m])) by (pod_name) * 100" "$start_time" "$end_time" query_cpu.csv "CPU Usage (%)"
 
 echo "All done!"
