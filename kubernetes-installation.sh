@@ -3,7 +3,7 @@
 set -o errexit
 set -o pipefail
 set -o nounset
-set -o xtrace
+#set -o xtrace
 
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
 #curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
@@ -52,7 +52,7 @@ fi
 
 #Install and run the NGINX ingress controller.
 # This is the default ingress nginx controller with enabled prometheus metrics
-kubectl apply -f ingress-nginx.yaml
+kubectl apply -f ingress-controller/ingress-nginx.yaml
 # sleep because kubectl cannot wait for a resource that does not exist
 echo "sleeping for 20s..."
 sleep 20
@@ -73,15 +73,15 @@ if [[ -z  $monitoring_namespace_found ]]
   else
     echo "monitoring namespace found, skipping namespace creation"
 fi
-kubectl apply -f clusterRole.yaml
-kubectl apply -f config-map.yaml
-kubectl apply  -f prometheus-deployment.yaml
+kubectl apply -f prometheus/clusterRole.yaml
+kubectl apply -f prometheus/config-map.yaml
+kubectl apply  -f prometheus/prometheus-deployment.yaml
 kubectl wait --for=condition=available --timeout=600s deployment/prometheus-deployment -n monitoring
 
 # service for prometheus deployment
-kubectl apply -f prometheus-service.yaml --namespace=monitoring
+kubectl apply -f prometheus/prometheus-service.yaml --namespace=monitoring
 # ingress for prometheus service
-kubectl apply -f prometheus-ingress.yaml
+kubectl apply -f prometheus/prometheus-ingress.yaml
 
 #Deploy an Ingress resource and two instances of a backend service using the “hashicorp/http-echo”. The Ingress should send requests
 #with path “/foo” to one service; and path “/bar” to another. The services should respond with “foo” and “bar” respectively.
