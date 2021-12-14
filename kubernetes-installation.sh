@@ -6,39 +6,39 @@ set -o nounset
 #set -o xtrace
 
 #Spin up a multi-node Kubernetes cluster using KinD or an alternative.
-#curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
-#chmod +x ./kind
-#mv ./kind /usr/local/bin/kind
-#
-#os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
-## FOR EC2 instance only
-#if [[ $os_name == '"Amazon Linux"' ]]
-#  then
-#    echo "Installing docker for EC2 instance"
-#    amazon-linux-extras install -y docker
-#  else
-#    echo "Not in EC2 environment, installing docker according to official docs"
-#    yum install -y yum-utils
-#    yum-config-manager \
-#        --add-repo \
-#        https://download.docker.com/linux/centos/docker-ce.repo
-#    yum install docker-ce docker-ce-cli containerd.io
-#fi
-#
-#systemctl start docker
-#systemctl enable docker
-#
-### add kubectl here
-#cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
-#[kubernetes]
-#name=Kubernetes
-#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-#enabled=1
-#gpgcheck=1
-#repo_gpgcheck=1
-#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-#EOF
-#yum install -y kubectl
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64
+chmod +x ./kind
+mv ./kind /usr/local/bin/kind
+
+os_name=$(cat /etc/os-release  | grep "^NAME"  | awk --field-separator="=" {'print $2'})
+# FOR EC2 instance only
+if [[ $os_name == '"Amazon Linux"' ]]
+  then
+    echo "Installing docker for EC2 instance"
+    amazon-linux-extras install -y docker
+  else
+    echo "Not in EC2 environment, installing docker according to official docs"
+    yum install -y yum-utils
+    yum-config-manager \
+        --add-repo \
+        https://download.docker.com/linux/centos/docker-ce.repo
+    yum install docker-ce docker-ce-cli containerd.io
+fi
+
+systemctl start docker
+systemctl enable docker
+
+## add kubectl here
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+yum install -y kubectl
 
 kind_cluster_exist=$(kind get clusters)
 
